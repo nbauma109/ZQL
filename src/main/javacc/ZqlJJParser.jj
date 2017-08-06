@@ -16,6 +16,7 @@
  */
 
 options{
+ 	JAVA_TEMPLATE_TYPE="modern";
     IGNORE_CASE=true ;
     STATIC=false ;
 //  DEBUG_LOOKAHEAD= true ;
@@ -25,8 +26,10 @@ PARSER_BEGIN(ZqlJJParser)
 
 package org.gibello.zql;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gibello.zql.alias.ZFromItem;
 import org.gibello.zql.alias.ZSelectItem;
@@ -47,23 +50,22 @@ import org.gibello.zql.utils.ZUtils;
  */
 public class ZqlJJParser {
 
-  public static void main(String args[]) throws ParseException {
+  public static void main(String args[]) throws Exception {
 
     ZqlJJParser p = null ;
 
     if ( args.length < 1  ) {
       System.out.println("Reading from stdin (exit; to finish)");
-      p = new ZqlJJParser(System.in) ;
+      p = new ZqlJJParser(new StreamProvider(System.in)) ;
 
     } else {
 
       try {
-        p = new ZqlJJParser(new DataInputStream(
-                          new FileInputStream(args[0]))) ;
-      } catch (FileNotFoundException e) {
-        System.out.println("File " + args[0] +
-                           " not found. Reading from stdin") ;
-        p = new ZqlJJParser(System.in) ;
+        p = new ZqlJJParser(new StreamProvider(new DataInputStream(
+                          new FileInputStream(args[0])))) ;
+      } catch (Exception e) {
+        System.out.println("Could not read " + args[0] + ". Reading from stdin");
+        p = new ZqlJJParser(new StreamProvider(System.in)) ;
       }
     } // else ends here
 
@@ -243,23 +245,25 @@ ZStatement SQLStatement():
   ZStatement s = null;
 }
 {
-    s = CommitStatement() { return s; }
+   (s = CommitStatement() {}
     |
-    s = DeleteStatement() { return s; }
+    s = DeleteStatement() {}
     |
-    s = InsertStatement() { return s; }
+    s = InsertStatement() {}
     |
-    s = LockTableStatement() { return s; }
+    s = LockTableStatement() {}
     |
-    s = RollbackStatement() { return s; }
+    s = RollbackStatement() {}
     |
-    s = QueryStatement() { return s; }
+    s = QueryStatement() {}
     |
-    s = SetTransactionStatement() { return s; }
+    s = SetTransactionStatement() {}
     |
-    s = UpdateStatement() { return s; }
+    s = UpdateStatement() {}
     |
-    ( "EXIT" | "QUIT" ) ";" { return null; }
+    ( "EXIT" | "QUIT" ) ";" {}
+   )
+   { return s; }
 }
 
 // CommitStatement ::= COMMIT [WORK] [COMMENT <comment>];
@@ -279,7 +283,7 @@ ZTransactStmt CommitStatement():
 ZLockTable LockTableStatement():
 {
   ZLockTable lck = new ZLockTable();
-  List v = new ArrayList();
+  List<String> v = new ArrayList<String>();
   String s;
 }
 {
@@ -305,7 +309,6 @@ ZTransactStmt RollbackStatement():
 // SetTransactionStatement ::= SET TRANSACTION READ (ONLY | WRITE)
 ZTransactStmt SetTransactionStatement():
 {
-  StringBuffer b;
   ZTransactStmt t = new ZTransactStmt("SET TRANSACTION");
   boolean rdonly = false;
 }
@@ -320,16 +323,18 @@ ZTransactStmt SetTransactionStatement():
 String LockMode():
 {
   StringBuffer b = new StringBuffer();
+  String retVal = "";
 }
 {
-   ("ROW" { b.append("ROW "); }
+   (("ROW" { b.append("ROW "); }
     ("SHARE" { b.append("SHARE"); } | "EXCLUSIVE" { b.append("EXCLUSIVE"); } ))
-   { return b.toString(); }
+   { retVal = b.toString(); }
  | ("SHARE" { b.append("SHARE"); }
     ["UPDATE" { b.append(" UPDATE"); }
      | ("ROW" "EXCLUSIVE") { b.append(" ROW EXCLUSIVE"); }])
-   { return b.toString(); }
- | ("EXCLUSIVE") { return new String("EXCLUSIVE"); }
+   { retVal = b.toString(); }
+ | ("EXCLUSIVE") { retVal = new String("EXCLUSIVE"); })
+ { return retVal; }
 }
 
 // UpdateStatement ::=
@@ -368,12 +373,14 @@ ZExp UpdatedValue(): // Can be a subquery or a expression
   ZExp e;
 }
 {
-  LOOKAHEAD(("(")+ "SELECT")
-  "(" e = SelectStatement() ")" { return e; }
+  (LOOKAHEAD(("(")+ "SELECT")
+  "(" e = SelectStatement() ")" {}
   |
-  e = SQLExpression() { return e; }
+  e = SQLExpression() {}
   |
-  e = PreparedCol() { return e; } // For prepared columns ("?")
+  e = PreparedCol() {}
+  )
+  { return e; }
 }
 
 // InsertStatement ::= INSERT INTO TableReference
@@ -384,16 +391,17 @@ ZInsert InsertStatement():
 {
   ZInsert ins;
   String s;
-  List v;
+  List<String> colNames;
+  List<ZExp> colValues;
   ZQuery q;
 }
 {
   "INSERT" "INTO" s = TableReference() { ins = new ZInsert(s); }
-   ["(" s = TableColumn() { v = new ArrayList(); v.add(s); }
-    ("," s = TableColumn() { v.add(s); } )* ")" { ins.addColumns(v); } ]
-   ( "VALUES" "(" v = SQLExpressionList() ")"
+   ["(" s = TableColumn() { colNames = new ArrayList<String>(); colNames.add(s); }
+    ("," s = TableColumn() { colNames.add(s); } )* ")" { ins.addColumns(colNames); } ]
+   ( "VALUES" "(" colValues = SQLExpressionList() ")"
      { ZExpression e = new ZExpression(",");
-       e.setOperands(v); ins.addValueSpec(e); }
+       e.setOperands(colValues); ins.addValueSpec(e); }
      |
      q = SelectStatement() { ins.addValueSpec(q); }
    )
@@ -443,7 +451,8 @@ String OracleObjectName():
   Token t;
 }
 {
-    t = <S_IDENTIFIER> { return t.toString(); } | t = <S_QUOTED_IDENTIFIER> { return t.toString(); }
+    (t = <S_IDENTIFIER> {} | t = <S_QUOTED_IDENTIFIER> {})
+    { return t.toString(); }
 }
 
 String Relop():
@@ -451,14 +460,16 @@ String Relop():
   Token op;
 }
 {
-   op = "="  { return op.toString(); }
- | op = "!=" { return op.toString(); }
- | op = "#"  { return op.toString(); }
- | op = "<>" { return op.toString(); }
- | op = ">"  { return op.toString(); }
- | op = ">=" { return op.toString(); }
- | op = "<"  { return op.toString(); }
- | op = "<=" { return op.toString(); }
+ ( op = "="  {}
+ | op = "!=" {}
+ | op = "#"  {}
+ | op = "<>" {}
+ | op = ">"  {}
+ | op = ">=" {}
+ | op = "<"  {}
+ | op = "<=" {}
+ )
+ { return op.toString(); }
 }
 
 // TableReference ::= OracleObjectName[.OracleObjectName]
@@ -487,7 +498,7 @@ void NumOrID():
 ZQuery SelectStatement():
 {
   ZQuery q;
-  List v;
+  List<ZOrderBy> v;
 }
 {
   q = SelectWithoutOrder()
@@ -500,8 +511,8 @@ ZQuery SelectStatement():
 ZQuery SelectWithoutOrder():
 {
   ZQuery q = new ZQuery();
-  List select;
-  List from;
+  List<ZSelectItem> select;
+  List<ZFromItem> from;
   ZExp where = null;
   ZGroupBy groupby = null;
   ZExpression setclause = null;
@@ -530,17 +541,19 @@ ZQuery SelectWithoutOrder():
 // SelectList ::= * | COUNT(*) | SelectItem (, SelectItem)*
 // 18/10/01 PY. Gibello - Removed "COUNT(*)" from here
 // COUNT is an aggregate, like AVG...
-List SelectList():
+List<ZSelectItem> SelectList():
 {
-  List v = new ArrayList();
+  List<ZSelectItem> retVal = new ArrayList<ZSelectItem>();
   ZSelectItem elem;
 }
 {
-  "*" { v.add(new ZSelectItem("*")); return v; }
+  ("*" { retVal.add(new ZSelectItem("*")); }
 //  | LOOKAHEAD(3) "COUNT" "(" "*" ")"
-//  { v.addElement(new ZSelectItem("COUNT(*)")); return v; } //TBD Expression ?
-  | elem = SelectItem() { v.add(elem); }
-    ("," elem = SelectItem() { v.add(elem); } )* { return v; }
+//  { retVal.addElement(new ZSelectItem("COUNT(*)")); } //TBD Expression ?
+  | elem = SelectItem() { retVal.add(elem); }
+    ("," elem = SelectItem() { retVal.add(elem); } )* {}
+  )
+  { return retVal; }
 }
 
 
@@ -556,9 +569,9 @@ ZSelectItem SelectItem():
   ZExp e;
 }
 {
-    LOOKAHEAD(SelectStar()) s = SelectStar() { return new ZSelectItem(s); }
+    (LOOKAHEAD(SelectStar()) s = SelectStar() { it = new ZSelectItem(s); }
 // |   LOOKAHEAD(3) "COUNT" "(" s = SelectStar() ")"
-//     { return new ZSelectItem("COUNT(" + s + ")"); } //TBD expression ?
+//     { it = new ZSelectItem("COUNT(" + s + ")"); } //TBD expression ?
 |   e = SQLSimpleExpression() // Column or Expression
     {
       //PY.Gibello 21 Apr 2001 - added e.toString() as arg
@@ -566,6 +579,8 @@ ZSelectItem SelectItem():
       it.setExpression(e);
     }
     [s = SelectAlias() { it.setAlias(s); } ] // Column Alias
+    {}
+    )
     { return it; }
 }
 
@@ -574,14 +589,17 @@ String SelectAlias():
 {
   Token tk;
   StringBuffer b = null;
+  String retVal;
 }
 {
-  [ "AS" ] ( tk = <S_QUOTED_IDENTIFIER> { return tk.toString().trim(); }
+  ([ "AS" ] ( tk = <S_QUOTED_IDENTIFIER> { retVal = tk.toString().trim(); }
     | (tk = <S_IDENTIFIER> {
         if(b == null) b = new StringBuffer(tk.toString().trim());
         else b.append(" " + tk.toString().trim()); })+
    )
-  { return b.toString().trim(); }
+  { retVal = b.toString().trim(); }
+  )
+  { return retVal; }
 }
 
 // SelectStar() ::= OracleObjectName()".*" |
@@ -599,9 +617,9 @@ String SelectStar():
 }
 
 // FromClause ::= FromItem (, FromItem)*
-List FromClause():
+List<ZFromItem> FromClause():
 {
-    List v = new ArrayList();
+    List<ZFromItem> v = new ArrayList<ZFromItem>();
   ZFromItem f;
 }
 {
@@ -645,7 +663,7 @@ void ConnectClause():
 ZGroupBy GroupByClause():
 {
   ZGroupBy g = null;
-  List v;
+  List<ZExp> v;
   ZExp e;
 }
 {
@@ -672,9 +690,9 @@ ZExpression SetClause():
   { return e; }
 }
 
-List OrderByClause():
+List<ZOrderBy> OrderByClause():
 {
-  List v = new ArrayList();
+  List<ZOrderBy> v = new ArrayList<ZOrderBy>();
   ZExp e;
   ZOrderBy ob;
 }
@@ -730,14 +748,15 @@ ZExp SQLUnaryLogicalExpression():
   boolean not = false;
 }
 {
-    LOOKAHEAD(2) e = ExistsClause() { return e; }
+    (LOOKAHEAD(2) e = ExistsClause() {}
 |   ( ["NOT" { not = true; } ]
      e1 = SQLRelationalExpression() {
        if(not) e = new ZExpression("NOT", e1);
        else e = e1;
-       return e;
      }
     )
+    )
+    { return e; }
 }
 
 ZExpression ExistsClause():
@@ -763,7 +782,7 @@ ZExp SQLRelationalExpression():
 {
   ZExp e1, eleft;
   ZExpression eright = null;
-  List v;
+  List<ZExp> v;
   boolean prior = false;
 }
 {
@@ -793,22 +812,22 @@ ZExp SQLRelationalExpression():
 
    {
      if(eright == null) return eleft;
-     List v2 = eright.getOperands();
-     if(v2 == null) v2 = new ArrayList(); //For IS NULL, which is unary!
+     List<ZExp> v2 = eright.getOperands();
+     if(v2 == null) v2 = new ArrayList<ZExp>(); //For IS NULL, which is unary!
      v2.add(0,eleft);
      eright.setOperands(v2);
      return eright;
    }
 }
 
-List SQLExpressionList():
+List<ZExp> SQLExpressionList():
 {
-  List v = new ArrayList();
+  List<ZExp> v = new ArrayList<ZExp>();
   ZExp e;
 }
 {
-    e = SQLSimpleExpressionOrPreparedCol() { v.add(e); }
-    ("," e = SQLSimpleExpressionOrPreparedCol() { v.add(e); } )*
+    (e = SQLSimpleExpressionOrPreparedCol() { v.add(e); }
+    ("," e = SQLSimpleExpressionOrPreparedCol() { v.add(e); } )*)
     { return v; }
 }
 
@@ -848,8 +867,10 @@ ZExp SQLSimpleExpressionOrPreparedCol():
   ZExp e;
 }
 {
-   e = SQLSimpleExpression() { return e; }
- | e = PreparedCol() { return e; } // For prepared columns ("?")
+ ( e = SQLSimpleExpression() {}
+ | e = PreparedCol() {} // For prepared columns ("?")
+ )
+ { return e; }
 }
 
 // For prepared columns ("?")
@@ -863,7 +884,7 @@ ZExpression SQLInClause():
   ZExpression e;
   ZQuery q;
   boolean not = false;
-  List v;
+  List<ZExp> v;
 }
 {
   ["NOT" { not = true; }]
@@ -1003,32 +1024,34 @@ ZExp SQLPrimaryExpression():
   ZExp e;
 }
 {
-  "NULL" { return new ZConstant("NULL", ZConstant.NULL); }
+(  "NULL" { e = new ZConstant("NULL", ZConstant.NULL); }
 |  LOOKAHEAD(OuterJoinExpression()) s = OuterJoinExpression() {
-     return new ZConstant(s, ZConstant.COLUMNNAME);
+     e = new ZConstant(s, ZConstant.COLUMNNAME);
      //return new ZExpression("_NOT_SUPPORTED"); //TBD
    }
 |  LOOKAHEAD(3) "COUNT" "(" "*" ")" {
-     return new ZExpression("COUNT",
+     e = new ZExpression("COUNT",
       new ZConstant("*", ZConstant.COLUMNNAME));
    }
 |  LOOKAHEAD(3) s = AggregateFunc() "("
     ("ALL" { modifier="all "; } | "DISTINCT" { modifier="distinct "; })
     s2 = TableColumn() ")"
-     { return new ZExpression(s, new ZConstant(modifier + s2, ZConstant.COLUMNNAME)); }
-|  LOOKAHEAD(2) e = FunctionCall() { return e; }
+     { e = new ZExpression(s, new ZConstant(modifier + s2, ZConstant.COLUMNNAME)); }
+|  LOOKAHEAD(2) e = FunctionCall() {}
 /*
-|  LOOKAHEAD(<S_IDENTIFIER> "(") e = FunctionCall() { return e; }
+|  LOOKAHEAD(<S_IDENTIFIER> "(") e = FunctionCall() {}
 */
-|  s = TableColumn() { return new ZConstant(s, ZConstant.COLUMNNAME); }
-|  t = <S_NUMBER> { return new ZConstant(t.toString(), ZConstant.NUMBER); }
+|  s = TableColumn() { e = new ZConstant(s, ZConstant.COLUMNNAME); }
+|  t = <S_NUMBER> { e = new ZConstant(t.toString(), ZConstant.NUMBER); }
 |  t = <S_CHAR_LITERAL> {
      s = t.toString();
      if(s.startsWith("\'")) s = s.substring(1);
      if(s.endsWith("\'")) s = s.substring(0, s.length()-1);
-     return new ZConstant(s, ZConstant.STRING); }
-|  t = <S_BIND> { return new ZConstant(t.toString(), ZConstant.STRING); }
-|  "(" e = SQLExpression() ")" { return e; }
+     e = new ZConstant(s, ZConstant.STRING); }
+|  t = <S_BIND> { e = new ZConstant(t.toString(), ZConstant.STRING); }
+|  "(" e = SQLExpression() ")" {}
+)
+{ return e; }
 }
 
 // AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
@@ -1038,38 +1061,41 @@ String AggregateFunc():
   Token t;
 }
 {
-  t = "SUM" { return t.toString(); }
-| t = "AVG" { return t.toString(); }
-| t = "MAX" { return t.toString(); }
-| t = "MIN" { return t.toString(); }
-| t = "COUNT" { return t.toString(); }
+( t = "SUM"   {}
+| t = "AVG"   {}
+| t = "MAX"   {}
+| t = "MIN"   {}
+| t = "COUNT" {}
+)
+{ return t.toString(); }
 }
 
 ZExpression FunctionCall():
 {
   Token t;
   String s;
-  ZExpression e;
-  List parm = null;
+  ZExpression e = null;
+  List<ZExp> parm = null;
 }
 {
+(
   (t = <S_IDENTIFIER> { s = t.toString(); } | s = AggregateFunc()) "("
   [ parm = SQLExpressionList() ] ")" {
 
     int nparm = ZUtils.isCustomFunction(s);
     if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
     if(nparm < 0)
-      throw new ParseException("Undefined function: " + s);
+      System.err.println("Undefined function: " + s);
     if(nparm != ZUtils.VARIABLE_PLIST && nparm > 0) {
       if(parm == null || parm.size() != nparm)
-        throw new ParseException("Function " + s + " should have "
-         + nparm + " parameter(s)");
+         System.err.println("Function " + s + " should have " + nparm + " parameter(s)");
     }
 
-    e = new ZExpression(s);
-    e.setOperands(parm);
-    return e;
+   	e = new ZExpression(s);
+   	e.setOperands(parm);
   }
+)
+{ return e;}
 }
 
 String OuterJoinExpression():

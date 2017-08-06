@@ -17,13 +17,14 @@
 
 package org.gibello.zql;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
 import org.gibello.zql.expression.ZExp;
 import org.gibello.zql.statement.ZStatement;
 import org.gibello.zql.utils.ZCommonConstants;
 import org.gibello.zql.utils.ZUtils;
-
-import java.io.InputStream;
-import java.util.List;
 
 /**
  * ZqlParser: an SQL parser.
@@ -33,87 +34,124 @@ import java.util.List;
  */
 public class ZqlParser {
 
-    /**
-     * The parser.
-     */
-    private ZqlJJParser parser = null;
+	/**
+	 * The parser.
+	 */
+	private ZqlJJParser parser = null;
 
-    /**
-     * Create a new parser to parse SQL statements from a given input stream.
-     *
-     * @param in The InputStream from which SQL statements will be read.
-     */
-    public ZqlParser(final InputStream in) {
-        this.initParser(in);
-    }
+	/**
+	 * Create a new parser to parse SQL statements from a given input stream.
+	 *
+	 * @param in
+	 *            The InputStream from which SQL statements will be read.
+	 * @throws IOException
+	 */
+	public ZqlParser(final InputStream in) throws IOException {
+		this.initParser(in);
+	}
 
-    /**
-     * Create a new parser: before use, call initParser(InputStream) to specify an input stream for the parsing.
-     */
-    public ZqlParser() {
+	/**
+	 * Create a new parser to parse SQL statements from a given input string.
+	 *
+	 * @param in
+	 *            The String from which SQL statements will be read.
+	 * @throws IOException
+	 */
+	public ZqlParser(final String in) throws IOException {
+		this.initParser(in);
+	}
 
-    }
+	/**
+	 * Create a new parser: before use, call initParser(InputStream) to specify
+	 * an input stream for the parsing.
+	 */
+	public ZqlParser() {
 
-    /**
-     * Initialize (or re-initialize) the input stream for the parser.
-     *
-     * @param in the input stream.
-     */
-    public void initParser(final InputStream in) {
-        if (this.parser == null) {
-            this.parser = new ZqlJJParser(in);
-        } else {
-            this.parser.ReInit(in);
-        }
-    }
+	}
 
-    /**
-     * Adds a custom function string.
-     *
-     * @param fct   the function names.
-     * @param nparm the function params.
-     */
-    public void addCustomFunction(final String fct, final int nparm) {
-        ZUtils.addCustomFunction(fct, nparm);
-    }
+	/**
+	 * Initialize (or re-initialize) the input stream for the parser.
+	 *
+	 * @param in
+	 *            the input stream.
+	 * @throws IOException
+	 */
+	public void initParser(final InputStream in) throws IOException {
+		if (this.parser == null) {
+			this.parser = new ZqlJJParser(new StreamProvider(in));
+		} else {
+			this.parser.ReInit(new StreamProvider(in));
+		}
+	}
 
-    /**
-     * Parse an SQL Statement from the parser's input stream.
-     *
-     * @return An SQL statement, or null if there's no more statement.
-     * @throws ParseException the parse exception.
-     */
-    public ZStatement readStatement() throws ParseException {
-        if (this.parser == null) {
-            throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
-        }
-        return this.parser.SQLStatement();
-    }
+	/**
+	 * Initialize (or re-initialize) the input string for the parser.
+	 *
+	 * @param in
+	 *            the input string.
+	 * @throws IOException
+	 */
+	public void initParser(final String in) throws IOException {
+		if (this.parser == null) {
+			this.parser = new ZqlJJParser(new StringProvider(in));
+		} else {
+			this.parser.ReInit(new StringProvider(in));
+		}
+	}
 
-    /**
-     * Parse a set of SQL Statements from the parser's input stream (all the available statements are parsed and returned).
-     *
-     * @return A vector of ZStatement objects (SQL statements).
-     * @throws ParseException the parse exception.
-     */
-    public List<ZStatement> readStatements() throws ParseException {
-        if (this.parser == null) {
-            throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
-        }
-        return this.parser.SQLStatements();
-    }
+	/**
+	 * Adds a custom function string.
+	 *
+	 * @param fct
+	 *            the function names.
+	 * @param nparm
+	 *            the function params.
+	 */
+	public void addCustomFunction(final String fct, final int nparm) {
+		ZUtils.addCustomFunction(fct, nparm);
+	}
 
-    /**
-     * Parse an SQL Expression (like the WHERE clause of an SQL query).
-     *
-     * @return An SQL expression.
-     * @throws ParseException the parse exception.
-     */
-    public ZExp readExpression() throws ParseException {
-        if (this.parser == null) {
-            throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
-        }
-        return this.parser.SQLExpression();
-    }
+	/**
+	 * Parse an SQL Statement from the parser's input stream.
+	 *
+	 * @return An SQL statement, or null if there's no more statement.
+	 * @throws ParseException
+	 *             the parse exception.
+	 */
+	public ZStatement readStatement() throws ParseException {
+		if (this.parser == null) {
+			throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
+		}
+		return this.parser.SQLStatement();
+	}
+
+	/**
+	 * Parse a set of SQL Statements from the parser's input stream (all the
+	 * available statements are parsed and returned).
+	 *
+	 * @return A vector of ZStatement objects (SQL statements).
+	 * @throws ParseException
+	 *             the parse exception.
+	 */
+	public List<ZStatement> readStatements() throws ParseException {
+		if (this.parser == null) {
+			throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
+		}
+		return this.parser.SQLStatements();
+	}
+
+	/**
+	 * Parse an SQL Expression (like the WHERE clause of an SQL query).
+	 *
+	 * @return An SQL expression.
+	 * @throws ParseException
+	 *             the parse exception.
+	 */
+	public ZExp readExpression() throws ParseException {
+		if (this.parser == null) {
+			throw new ParseException(ZCommonConstants.PARSE_EXCEPTION);
+		}
+		return this.parser.SQLExpression();
+	}
 
 }

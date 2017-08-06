@@ -125,13 +125,13 @@ public class ZUpdate implements ZStatement {
      */
     public void addColumnUpdate(final String col, final ZExp val) {
         if (this.setValues == null) {
-            this.setValues = new Hashtable<>();
+            this.setValues = new Hashtable<String, ZExp>();
         }
 
         this.setValues.put(col, val);
 
         if (this.tableColumns == null) {
-            this.tableColumns = new Vector<>();
+            this.tableColumns = new Vector<String>();
         }
 
         this.tableColumns.addElement(col);

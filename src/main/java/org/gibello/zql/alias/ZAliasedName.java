@@ -17,12 +17,12 @@
 
 package org.gibello.zql.alias;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.gibello.zql.utils.ZCommonConstants;
-
 import java.io.Serializable;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.gibello.zql.utils.ZCommonConstants;
 
 /**
  * A name/alias association. <br>
@@ -37,262 +37,267 @@ import java.util.StringTokenizer;
  */
 public class ZAliasedName implements Serializable {
 
-    /**
-     * From table clause.
-     */
-    public static final int FORM_TABLE = 1;
-    /**
-     * From column clause.
-     */
-    public static final int FORM_COLUMN = 2;
-    /**
-     * Serial version UID.
-     */
-    private static final long serialVersionUID = 1L;
-    /**
-     *
-     */
-    private String strform = "";
-    /**
-     * The schema.
-     */
-    private String schema = null;
-    /**
-     * The table name.
-     */
-    private String table = null;
-    /**
-     * The column name.
-     */
-    private String column = null;
-    /**
-     * The alias.
-     */
-    private String alias = null;
-    /**
-     * Form column.
-     */
-    private int formColumn = ZAliasedName.FORM_COLUMN;
+	/**
+	 * From table clause.
+	 */
+	public static final int FORM_TABLE = 1;
+	/**
+	 * From column clause.
+	 */
+	public static final int FORM_COLUMN = 2;
+	/**
+	 * Serial version UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
+	 *
+	 */
+	private String strform = "";
+	/**
+	 * The schema.
+	 */
+	private String schema = null;
+	/**
+	 * The table name.
+	 */
+	private String table = null;
+	/**
+	 * The column name.
+	 */
+	private String column = null;
+	/**
+	 * The alias.
+	 */
+	private String alias = null;
+	/**
+	 * Form column.
+	 */
+	private int formColumn = ZAliasedName.FORM_COLUMN;
 
-    /**
-     * Default constructor.
-     */
-    public ZAliasedName() {
+	/**
+	 * Default constructor.
+	 */
+	public ZAliasedName() {
 
-    }
+	}
 
-    /**
-     * Create a new ZAliasedName given it's full name.
-     *
-     * @param fullname The full name: [[schema.]table.]column
-     * @param form     The name form (FORM_TABLE or FORM_COLUMN)
-     */
-    public ZAliasedName(final String fullname, final int form) {
+	/**
+	 * Create a new ZAliasedName given it's full name.
+	 *
+	 * @param fullname
+	 *            The full name: [[schema.]table.]column
+	 * @param form
+	 *            The name form (FORM_TABLE or FORM_COLUMN)
+	 */
+	public ZAliasedName(final String fullname, final int form) {
 
-        this.formColumn = form;
-        this.strform = fullname;
+		this.formColumn = form;
+		this.strform = fullname;
 
-        final StringTokenizer st = new StringTokenizer(fullname, ".");
-        switch (st.countTokens()) {
-            case ZCommonConstants.MAGIC_NUMBER_1:
-                if (form == ZAliasedName.FORM_TABLE) {
-                    this.table = st.nextToken();
-                } else {
-                    this.column = st.nextToken();
-                }
-                break;
-            case ZCommonConstants.MAGIC_NUMBER_2:
-                if (form == ZAliasedName.FORM_TABLE) {
-                    this.schema = st.nextToken();
-                    this.table = st.nextToken();
-                } else {
-                    this.table = st.nextToken();
-                    this.column = st.nextToken();
-                }
-                break;
-            case ZCommonConstants.MAGIC_NUMBER_3:
-            default:
-                this.schema = st.nextToken();
-                this.table = st.nextToken();
-                this.column = st.nextToken();
-                break;
-        }
+		final StringTokenizer st = new StringTokenizer(fullname, ".");
+		switch (st.countTokens()) {
+		case ZCommonConstants.MAGIC_NUMBER_1:
+			if (form == ZAliasedName.FORM_TABLE) {
+				this.table = st.nextToken();
+			} else {
+				this.column = st.nextToken();
+			}
+			break;
+		case ZCommonConstants.MAGIC_NUMBER_2:
+			if (form == ZAliasedName.FORM_TABLE) {
+				this.schema = st.nextToken();
+				this.table = st.nextToken();
+			} else {
+				this.table = st.nextToken();
+				this.column = st.nextToken();
+			}
+			break;
+		case ZCommonConstants.MAGIC_NUMBER_3:
+		default:
+			this.schema = st.nextToken();
+			this.table = st.nextToken();
+			this.column = st.nextToken();
+			break;
+		}
 
-        if (this.schema != null) {
-            this.schema = this.postProcess(this.schema);
-        }
+		if (this.schema != null) {
+			this.schema = this.postProcess(this.schema);
+		}
 
-        if (this.table != null) {
-            this.table = this.postProcess(this.table);
-        }
+		if (this.table != null) {
+			this.table = this.postProcess(this.table);
+		}
 
-        if (this.column != null) {
-            this.column = this.postProcess(this.column);
-        }
-    }
+		if (this.column != null) {
+			this.column = this.postProcess(this.column);
+		}
+	}
 
-    /**
-     * Post process.
-     *
-     * @param val the value.
-     * @return the trimmed query
-     */
-    private String postProcess(final String val) {
-        String result = null;
+	/**
+	 * Post process.
+	 *
+	 * @param val
+	 *            the value.
+	 * @return the trimmed query
+	 */
+	private String postProcess(final String val) {
+		String result = null;
 
-        if (val == null) {
-            result = null;
-        }
-        if (val.contains(ZCommonConstants.LEFT_BRACKET)) {
-            result = val.substring(val.lastIndexOf(ZCommonConstants.LEFT_BRACKET) + 1);
-        }
-        if (val.contains(ZCommonConstants.RIGHT_BRACKET)) {
-            result = val.substring(0, val.indexOf(ZCommonConstants.RIGHT_BRACKET));
-        }
+		if (val == null) {
+			result = null;
+		}
+		if (val.contains(ZCommonConstants.LEFT_BRACKET)) {
+			result = val.substring(val.lastIndexOf(ZCommonConstants.LEFT_BRACKET) + 1);
+		}
+		if (val.contains(ZCommonConstants.RIGHT_BRACKET)) {
+			result = val.substring(0, val.indexOf(ZCommonConstants.RIGHT_BRACKET));
+		}
 
-        if (result == null && val != null) {
-            result = val;
-        }
-        return result.trim();
-    }
+		if ((result == null) && (val != null)) {
+			result = val;
+		}
+		return result.trim();
+	}
 
-    @Override
-    public String toString() {
-        if (this.alias == null) {
-            return this.strform;
-        } else {
-            return this.strform + " " + this.alias;
-        }
-    }
+	@Override
+	public String toString() {
+		if (this.alias == null) {
+			return this.strform;
+		} else {
+			return this.strform + " " + this.alias;
+		}
+	}
 
-    /**
-     * @return If the name is of the form schema.table.column, returns the schema part
-     */
-    public String getSchema() {
-        return this.schema;
-    }
+	/**
+	 * @return If the name is of the form schema.table.column, returns the
+	 *         schema part
+	 */
+	public String getSchema() {
+		return this.schema;
+	}
 
-    /**
-     * @param schema the schema.
-     */
-    public void setSchema(final String schema) {
-        this.schema = schema;
-    }
+	/**
+	 * @param schema
+	 *            the schema.
+	 */
+	public void setSchema(final String schema) {
+		this.schema = schema;
+	}
 
-    /**
-     * @return If the name is of the form [schema.]table.column, returns the schema part
-     */
-    public String getTable() {
-        return this.table;
-    }
+	/**
+	 * @return If the name is of the form [schema.]table.column, returns the
+	 *         schema part
+	 */
+	public String getTable() {
+		return this.table;
+	}
 
-    /**
-     * @param table the table name.
-     */
-    public void setTable(final String table) {
-        this.table = table;
-    }
+	/**
+	 * @param table
+	 *            the table name.
+	 */
+	public void setTable(final String table) {
+		this.table = table;
+	}
 
-    /**
-     * @return The name is of the form [[schema.]table.]column: return the column part
-     */
-    public String getColumn() {
-        return this.column;
-    }
+	/**
+	 * @return The name is of the form [[schema.]table.]column: return the
+	 *         column part
+	 */
+	public String getColumn() {
+		return this.column;
+	}
 
-    /**
-     * @param column the column.
-     */
-    public void setColumn(final String column) {
-        this.column = column;
-    }
+	/**
+	 * @param column
+	 *            the column.
+	 */
+	public void setColumn(final String column) {
+		this.column = column;
+	}
 
-    /**
-     * @return true if column is "*", false otherwise. Example: *, table.* are wildcards.
-     */
-    public boolean isWildcard() {
-        boolean result;
+	/**
+	 * @return true if column is "*", false otherwise. Example: *, table.* are
+	 *         wildcards.
+	 */
+	public boolean isWildcard() {
+		boolean result;
 
-        if (this.formColumn == ZAliasedName.FORM_TABLE) {
-            result = this.table != null && this.table.equals("*");
-        } else {
-            result = this.column != null && this.column.indexOf('*') >= 0;
-        }
+		if (this.formColumn == ZAliasedName.FORM_TABLE) {
+			result = (this.table != null) && this.table.equals("*");
+		} else {
+			result = (this.column != null) && (this.column.indexOf('*') >= 0);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    /**
-     * @return the alias associated to the current name.
-     */
-    public String getAlias() {
-        return this.alias;
-    }
+	/**
+	 * @return the alias associated to the current name.
+	 */
+	public String getAlias() {
+		return this.alias;
+	}
 
-    /**
-     * Associate an alias with the current name.
-     *
-     * @param alias the alias associated to the current name.
-     */
-    public void setAlias(final String alias) {
-        this.alias = alias;
-    }
+	/**
+	 * Associate an alias with the current name.
+	 *
+	 * @param alias
+	 *            the alias associated to the current name.
+	 */
+	public void setAlias(final String alias) {
+		this.alias = alias;
+	}
 
-    /**
-     * @return the string form.
-     */
-    public String getStrform() {
-        return this.strform;
-    }
+	/**
+	 * @return the string form.
+	 */
+	public String getStrform() {
+		return this.strform;
+	}
 
-    /**
-     * @param strform the string form.
-     */
-    public void setStrform(final String strform) {
-        this.strform = strform;
-    }
+	/**
+	 * @param strform
+	 *            the string form.
+	 */
+	public void setStrform(final String strform) {
+		this.strform = strform;
+	}
 
-    /**
-     * @return the form column.
-     */
-    public int getFormColumn() {
-        return this.formColumn;
-    }
+	/**
+	 * @return the form column.
+	 */
+	public int getFormColumn() {
+		return this.formColumn;
+	}
 
-    /**
-     * @param formColumn the form column.
-     */
-    public void setFormColumn(final int formColumn) {
-        this.formColumn = formColumn;
-    }
+	/**
+	 * @param formColumn
+	 *            the form column.
+	 */
+	public void setFormColumn(final int formColumn) {
+		this.formColumn = formColumn;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
 
-        if (o == null || getClass() != o.getClass()) return false;
+		if ((o == null) || (getClass() != o.getClass())) {
+			return false;
+		}
 
-        ZAliasedName that = (ZAliasedName) o;
+		ZAliasedName that = (ZAliasedName) o;
 
-        return new EqualsBuilder()
-                .append(getFormColumn(), that.getFormColumn())
-                .append(getStrform(), that.getStrform())
-                .append(getSchema(), that.getSchema())
-                .append(getTable(), that.getTable())
-                .append(getColumn(), that.getColumn())
-                .append(getAlias(), that.getAlias())
-                .isEquals();
-    }
+		return new EqualsBuilder().append(getFormColumn(), that.getFormColumn()).append(getStrform(), that.getStrform()).append(getSchema(), that.getSchema())
+				.append(getTable(), that.getTable()).append(getColumn(), that.getColumn()).append(getAlias(), that.getAlias()).isEquals();
+	}
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getStrform())
-                .append(getSchema())
-                .append(getTable())
-                .append(getColumn())
-                .append(getAlias())
-                .append(getFormColumn())
-                .toHashCode();
-    }
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37).append(getStrform()).append(getSchema()).append(getTable()).append(getColumn()).append(getAlias()).append(getFormColumn()).toHashCode();
+	}
+
 }

@@ -1,6 +1,10 @@
 package org.gibello.zql.utils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Utils class to be used in unit testing the project.
@@ -10,15 +14,22 @@ import java.io.*;
  */
 public class TestUtils {
 
-    public static String readInputStreamAsString(String inputStreamPath) throws IOException {
-        InputStream inputStream = new DataInputStream(new FileInputStream(inputStreamPath));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) {
-            baos.write(buffer, 0, length);
-        }
-        return baos.toString();
-    }
+	public static String readInputStreamAsString(String inputStreamPath) throws IOException {
+		InputStream inputStream = null;
+		try {
+			inputStream = new DataInputStream(new FileInputStream(inputStreamPath));
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = inputStream.read(buffer)) != -1) {
+				baos.write(buffer, 0, length);
+			}
+			return baos.toString();
+		} finally {
+			if (inputStream != null) {
+				inputStream.close();
+			}
+		}
+	}
 
 }

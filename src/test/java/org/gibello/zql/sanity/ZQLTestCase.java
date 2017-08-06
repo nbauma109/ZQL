@@ -17,6 +17,13 @@
 
 package org.gibello.zql.sanity;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.SQLException;
+import java.util.List;
+
 import org.gibello.zql.ParseException;
 import org.gibello.zql.ZqlParser;
 import org.gibello.zql.alias.ZFromItem;
@@ -25,12 +32,7 @@ import org.gibello.zql.data.ZEval;
 import org.gibello.zql.data.ZTuple;
 import org.gibello.zql.expression.ZExpression;
 import org.gibello.zql.query.ZQuery;
-import org.gibello.zql.statement.ZInsert;
 import org.gibello.zql.statement.ZStatement;
-
-import java.io.*;
-import java.sql.SQLException;
-import java.util.List;
 
 /**
  * <pre>
@@ -54,172 +56,120 @@ import java.util.List;
  */
 public class ZQLTestCase {
 
-    /**
-     * Default constructor.
-     */
-    public ZQLTestCase() {
+	/**
+	 * Default constructor.
+	 */
+	public ZQLTestCase() {
 
-    }
+	}
 
-    public List<ZStatement> parseSQL(String sqlScript) throws ParseException {
-        return parseSQL(new ByteArrayInputStream(sqlScript.getBytes()));
-    }
+	public List<ZStatement> parseSQL(String inputString) throws ParseException, IOException {
+		final ZqlParser p = new ZqlParser(inputString);
+		return p.readStatements();
+	}
 
-    public List<ZStatement> parseSQL(InputStream inputStream) throws ParseException {
-        final ZqlParser p = new ZqlParser(inputStream);
-        return p.readStatements();
-    }
+	public List<ZStatement> parseSQL(InputStream inputStream) throws ParseException, IOException {
+		final ZqlParser p = new ZqlParser(inputStream);
+		return p.readStatements();
+	}
 
-    /**
-     * Query the database.
-     *
-     * @param q the query.
-     * @throws SQLException the exception.
-     * @throws IOException  the exception.
-     */
-    public String queryDB(final ZQuery q) throws IOException, SQLException {
-        StringBuilder sb = new StringBuilder();
+	/**
+	 * Query the database.
+	 *
+	 * @param q
+	 *            the query.
+	 * @throws SQLException
+	 *             the exception.
+	 * @throws IOException
+	 *             the exception.
+	 */
+	public String queryDB(final ZQuery q) throws IOException, SQLException {
+		StringBuilder sb = new StringBuilder();
 
-        // SELECT part of the query
-        final List<?> sel = q.getSelect();
-        // FROM part of the query
-        final List<?> from = q.getFrom();
-        // WHERE part of the query
-        final ZExpression where = (ZExpression) q.getWhere();
-        // ORDER BY part of the query
-        final List<?> orderBy = q.getOrderBy();
+		// SELECT part of the query
+		final List<ZSelectItem> sel = q.getSelect();
+		// FROM part of the query
+		final List<ZFromItem> from = q.getFrom();
+		// WHERE part of the query
+		final ZExpression where = (ZExpression) q.getWhere();
 
-        // query
-        if (from.size() > 1) {
-            throw new SQLException("Joins are not supported");
-        }
+		// query
+		if (from.size() > 1) {
+			throw new SQLException("Joins are not supported");
+		}
 
-        // Retrieve the table name in the FROM clause
-        final ZFromItem table = (ZFromItem) from.get(0);
+		// Retrieve the table name in the FROM clause
+		final ZFromItem table = from.get(0);
 
-        // We suppose the data is in a text file called <tableName>.db
-        // <tableName> is the table name in the FROM clause
-        // BufferedReader db1 = new BufferedReader(new
-        // FileReader(table.getTable() + ".db"));
-        final BufferedReader db = new BufferedReader(new InputStreamReader(ZQLTestCase.class.getClassLoader().getResourceAsStream(table.getTable() + ".db")));
+		// We suppose the data is in a text file called <tableName>.db
+		// <tableName> is the table name in the FROM clause
+		// BufferedReader db1 = new BufferedReader(new
+		// FileReader(table.getTable() + ".db"));
+		final BufferedReader db = new BufferedReader(new InputStreamReader(ZQLTestCase.class.getClassLoader().getResourceAsStream(table.getTable() + ".db")));
 
-        // Read the column names (the 1st line of the .db file)
-        final ZTuple tuple = new ZTuple(db.readLine());
+		// Read the column names (the 1st line of the .db file)
+		final ZTuple tuple = new ZTuple(db.readLine());
 
-        final ZEval evaluator = new ZEval();
+		final ZEval evaluator = new ZEval();
 
-        // Now, each line in the .db file is a tuple
-        String tpl;
-        while ((tpl = db.readLine()) != null) {
+		// Now, each line in the .db file is a tuple
+		String tpl;
+		while ((tpl = db.readLine()) != null) {
 
-            tuple.setRow(tpl);
+			tuple.setRow(tpl);
 
-            // Evaluate the WHERE expression for the current tuple
-            // Display the tuple if the condition evaluates to true
+			// Evaluate the WHERE expression for the current tuple
+			// Display the tuple if the condition evaluates to true
 
-            if (where == null || evaluator.eval(tuple, where)) {
-                sb.append(displayTuple(tuple, sel));
-            }
+			if ((where == null) || evaluator.eval(tuple, where)) {
+				sb.append(displayTuple(tuple, sel));
+			}
 
-        }
+		}
 
-        db.close();
+		db.close();
 
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 
-    /**
-     * @param ins insert query.
-     */
-    public String insertDB(final ZInsert ins) throws SQLException, IOException {
-        StringBuilder sb = new StringBuilder();
-//
-//        // get table name
-//        final String table = ins.getTable();
-//        //
-//        ins.get
-//
-//        // SELECT part of the query
-//        final List<?> sel = q.getSelect();
-//        // FROM part of the query
-//        final List<?> from = q.getFrom();
-//        // WHERE part of the query
-//        final ZExpression where = (ZExpression) q.getWhere();
-//        // ORDER BY part of the query
-//        final List<?> orderBy = q.getOrderBy();
-//
-//
-//        // query
-//        if (from.size() > 1) {
-//            throw new SQLException("Joins are not supported");
-//        }
-//
-//        // We suppose the data is in a text file called <tableName>.db
-//        // <tableName> is the table name in the FROM clause
-//        // BufferedReader db1 = new BufferedReader(new
-//        // FileReader(table.getTable() + ".db"));
-//        final BufferedReader db = new BufferedReader(new InputStreamReader(ZQLTestCase.class.getClassLoader().getResourceAsStream(table + ".db")));
-//
-//        // Read the column names (the 1st line of the .db file)
-//        final ZTuple tuple = new ZTuple(db.readLine());
-//
-//        final ZEval evaluator = new ZEval();
-//
-//        // Now, each line in the .db file is a tuple
-//        String tpl;
-//        while ((tpl = db.readLine()) != null) {
-//
-//            tuple.setRow(tpl);
-//
-//            // Evaluate the WHERE expression for the current tuple
-//            // Display the tuple if the condition evaluates to true
-//
-//            if (where == null || evaluator.eval(tuple, where)) {
-//                sb.append(displayTuple(tuple, sel));
-//            }
-//
-//        }
-//
-//        db.close();
+	/**
+	 * Display a tuple, according to a SELECT map.
+	 *
+	 * @param tuple
+	 *            the tuple.
+	 * @param selectList
+	 *            the element map.
+	 * @throws SQLException
+	 *             the exception.
+	 */
+	private String displayTuple(final ZTuple tuple, final List<ZSelectItem> selectList) throws SQLException {
+		StringBuilder sb = new StringBuilder();
 
-        return sb.toString();
-    }
+		// If it is a "select *", display the whole tuple
+		if (selectList.get(0).isWildcard()) {
+			sb.append(tuple.toString()).append("\n");
+		}
 
-    /**
-     * Display a tuple, according to a SELECT map.
-     *
-     * @param tuple the tuple.
-     * @param map   the element map.
-     * @throws SQLException the exception.
-     */
-    private String displayTuple(final ZTuple tuple, final List<?> map) throws SQLException {
-        StringBuilder sb = new StringBuilder();
+		final ZEval evaluator = new ZEval();
 
-        // If it is a "select *", display the whole tuple
-        if (((ZSelectItem) map.get(0)).isWildcard()) {
-            sb.append(tuple.toString()).append("\n");
-        }
+		// Evaluate the value of each select item
+		for (int i = 0; i < selectList.size(); i++) {
 
-        final ZEval evaluator = new ZEval();
+			final ZSelectItem item = selectList.get(i);
+			Object expValue = evaluator.evalExpValue(tuple, item.getExpression());
 
-        // Evaluate the value of each select item
-        for (int i = 0; i < map.size(); i++) {
+			if (expValue != null) {
+				sb.append(expValue.toString());
+			}
 
-            final ZSelectItem item = (ZSelectItem) map.get(i);
-            Object expValue = evaluator.evalExpValue(tuple, item.getExpression());
+			if (i == (selectList.size() - 1)) {
+				sb.append("\n");
+			} else {
+				sb.append(", ");
+			}
+		}
 
-            if (expValue != null) {
-                sb.append(expValue.toString());
-            }
-
-            if (i == map.size() - 1) {
-                sb.append("\n");
-            } else {
-                sb.append(", ");
-            }
-        }
-
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 
 }

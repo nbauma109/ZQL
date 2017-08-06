@@ -18,245 +18,141 @@
 package org.gibello.zql.utils;
 
 /**
- * Common constants class designed to have lightweight code and free of a large amount of code hiding functionality.
+ * Common constants class designed to have lightweight code and free of a large
+ * amount of code hiding functionality.
  *
  * @author Bogdan Mariesan, Romania
  */
 public class ZCommonConstants {
 
-    /**
-     * Equals and whitespace string.
-     */
-    public static final String EQUALS_WITH_WHITESPACE_STRING = " = ";
+	/**
+	 * Equals and whitespace string.
+	 */
+	public static final String EQUALS_WITH_WHITESPACE_STRING = " = ";
 
-    /**
-     * Nullable string.
-     */
-    public static final String NULLABLE = "(null)";
+	/**
+	 * Nullable string.
+	 */
+	public static final String NULLABLE = "(null)";
 
-    /**
-     * Unknown column error.
-     */
-    public static final String ZEVAL_EXP_VALUE_UNKNOWN_COLUMN = "ZEval.evalExpValue(): unknown column ";
+	/**
+	 * Unknown column error.
+	 */
+	public static final String ZEVAL_EXP_VALUE_UNKNOWN_COLUMN = "ZEval.evalExpValue(): unknown column ";
 
-    /**
-     * Slash string.
-     */
-    public static final String SLASH = "/";
+	/**
+	 * Expression not numeric error.
+	 */
+	public static final String ZEVAL_NUMERIC_EXP_EXPRESSION_NOT_NUMERIC = "ZEval.evalNumericExp(): expression not numeric";
 
-    /**
-     * Multiplication string.
-     */
-    public static final String MULTIPLICATION = "*";
+	/**
+	 * Like can only compare strings error.
+	 */
+	public static final String ZEVAL_LIKE_LIKE_CAN_ONLY_COMPARE_STRINGS = "ZEval.evalLike(): LIKE can only compare strings";
 
-    /**
-     * Minus string.
-     */
-    public static final String MINUS = "-";
+	/**
+	 * Prefix string.
+	 */
+	public static final String PREFIX = "%";
 
-    /**
-     * Plus string.
-     */
-    public static final String PLUS = "+";
+	/**
+	 * Trying to compare more than two values error.
+	 */
+	public static final String ZEVAL_CMP_TRYING_TO_COMPARE_MORE_THAN_TWO_VALUES = "ZEval.evalCmp(): Trying to compare more than two values";
 
-    /**
-     * Expression not numeric error.
-     */
-    public static final String ZEVAL_NUMERIC_EXP_EXPRESSION_NOT_NUMERIC = "ZEval.evalNumericExp(): expression not numeric";
+	/**
+	 * Trying to compare less than two values error.
+	 */
+	public static final String ZEVAL_CMP_TRYING_TO_COMPARE_LESS_THAN_TWO_VALUES = "ZEval.evalCmp(): Trying to compare less than two values";
 
-    /**
-     * Like can only compare strings error.
-     */
-    public static final String ZEVAL_LIKE_LIKE_CAN_ONLY_COMPARE_STRINGS = "ZEval.evalLike(): LIKE can only compare strings";
+	/**
+	 * Unknown operator error.
+	 */
+	public static final String ZEVAL_UNKNOWN_OPERATOR = "ZEval.eval(): Unknown operator ";
 
-    /**
-     * Prefix string.
-     */
-    public static final String PREFIX = "%";
+	/**
+	 * Can't evaluate IS NOT NULL error.
+	 */
+	public static final String ZEVAL_CAN_T_EVAL_IS_NOT_NULL = "ZEval.eval(): can't eval IS (NOT) NULL";
 
-    /**
-     * Trying to compare more than two values error.
-     */
-    public static final String ZEVAL_CMP_TRYING_TO_COMPARE_MORE_THAN_TWO_VALUES = "ZEval.evalCmp(): Trying to compare more than two values";
+	/**
+	 * Operator # not supported error.
+	 */
+	public static final String ZEVAL_OPERATOR_NOT_SUPPORTED = "ZEval.eval(): Operator # not supported";
 
-    /**
-     * Trying to compare less than two values error.
-     */
-    public static final String ZEVAL_CMP_TRYING_TO_COMPARE_LESS_THAN_TWO_VALUES = "ZEval.evalCmp(): Trying to compare less than two values";
+	/**
+	 * ZEval null argument or operator.
+	 */
+	public static final String ZEVAL_NULL_ARGUMENT_OR_OPERATOR = "ZEval.eval(): null argument or operator";
 
-    /**
-     * Unknown operator error.
-     */
-    public static final String ZEVAL_UNKNOWN_OPERATOR = "ZEval.eval(): Unknown operator ";
+	/**
+	 * ZEval only expressions are supported.
+	 */
+	public static final String ZEVAL_ONLY_EXPRESSIONS_ARE_SUPPORTED = "ZEval.eval(): only expressions are supported";
 
-    /**
-     * Is not null string.
-     */
-    public static final String IS_NOT_NULL = "IS NOT NULL";
+	/**
+	 * The count operator.
+	 */
+	public static final String COUNT_OPERATOR = "COUNT";
 
-    /**
-     * Can't evaluate IS NOT NULL error.
-     */
-    public static final String ZEVAL_CAN_T_EVAL_IS_NOT_NULL = "ZEval.eval(): can't eval IS (NOT) NULL";
+	/**
+	 * The min operator.
+	 */
+	public static final String MIN_OPERATOR = "MIN";
 
-    /**
-     * Is null string.
-     */
-    public static final String IS_NULL = "IS NULL";
+	/**
+	 * The max operator.
+	 */
+	public static final String MAX_OPERATOR = "MAX";
 
-    /**
-     * Not in string.
-     */
-    public static final String NOT_IN = "NOT IN";
+	/**
+	 * The average operator.
+	 */
+	public static final String AVG_OPERATOR = "AVG";
 
-    /**
-     * In string.
-     */
-    public static final String IN = "IN";
+	/**
+	 * The sum operator.
+	 */
+	public static final String SUM_OPERATOR = "SUM";
 
-    /**
-     * Not like string.
-     */
-    public static final String NOT_LIKE = "NOT LIKE";
+	/**
+	 * Empty string.
+	 */
+	public static final String EMPTY_STRING = " ";
 
-    /**
-     * Like string.
-     */
-    public static final String LIKE = "LIKE";
+	/**
+	 * Comma.
+	 */
+	public static final String COMMA = ",";
 
-    /**
-     * Not between string.
-     */
-    public static final String NOT_BETWEEN = "NOT BETWEEN";
+	/**
+	 * The parse exception error message.
+	 */
+	public static final String PARSE_EXCEPTION = "Parser not initialized: use initParser(InputStream);";
 
-    /**
-     * Between string.
-     */
-    public static final String BETWEEN = "BETWEEN";
+	/**
+	 * Right bracket.
+	 */
+	public static final String RIGHT_BRACKET = ")";
 
-    /**
-     * Lesser than string.
-     */
-    public static final String LESSER_THAN = "<";
+	/**
+	 * Left bracket.
+	 */
+	public static final String LEFT_BRACKET = "(";
 
-    /**
-     * Greater than string.
-     */
-    public static final String GREATER_THAN = ">";
+	/**
+	 * Magic number.
+	 */
+	public static final int MAGIC_NUMBER_3 = 3;
 
-    /**
-     * Operator # not supported error.
-     */
-    public static final String ZEVAL_OPERATOR_NOT_SUPPORTED = "ZEval.eval(): Operator # not supported";
+	/**
+	 * Magic number.
+	 */
+	public static final int MAGIC_NUMBER_2 = 2;
 
-    /**
-     * Diez string.
-     */
-    public static final String DIEZ = "#";
-
-    /**
-     * Exclusion string.
-     */
-    public static final String EXCLUDING = "<>";
-
-    /**
-     * Not equals string.
-     */
-    public static final String NOT_EQUALS = "!=";
-
-    /**
-     * Equals string.
-     */
-    public static final String EQUALS = "=";
-
-    /**
-     * Not string.
-     */
-    public static final String NOT = "NOT";
-
-    /**
-     * ZEval null argument or operator.
-     */
-    public static final String ZEVAL_NULL_ARGUMENT_OR_OPERATOR = "ZEval.eval(): null argument or operator";
-
-    /**
-     * ZEval only expressions are supported.
-     */
-    public static final String ZEVAL_ONLY_EXPRESSIONS_ARE_SUPPORTED = "ZEval.eval(): only expressions are supported";
-
-    /**
-     * And string.
-     */
-    public static final String AND = "AND";
-
-    /**
-     * Or string.
-     */
-    public static final String OR = "OR";
-
-    /**
-     * The count operator.
-     */
-    public static final String COUNT_OPERATOR = "COUNT";
-
-    /**
-     * The min operator.
-     */
-    public static final String MIN_OPERATOR = "MIN";
-
-    /**
-     * The max operator.
-     */
-    public static final String MAX_OPERATOR = "MAX";
-
-    /**
-     * The average operator.
-     */
-    public static final String AVG_OPERATOR = "AVG";
-
-    /**
-     * The sum operator.
-     */
-    public static final String SUM_OPERATOR = "SUM";
-
-    /**
-     * Empty string.
-     */
-    public static final String EMPTY_STRING = " ";
-
-    /**
-     * Comma.
-     */
-    public static final String COMMA = ",";
-
-    /**
-     * The parse exception error message.
-     */
-    public static final String PARSE_EXCEPTION = "Parser not initialized: use initParser(InputStream);";
-
-    /**
-     * Right bracket.
-     */
-    public static final String RIGHT_BRACKET = ")";
-
-    /**
-     * Left bracket.
-     */
-    public static final String LEFT_BRACKET = "(";
-
-    /**
-     * Magic number.
-     */
-    public static final int MAGIC_NUMBER_3 = 3;
-
-    /**
-     * Magic number.
-     */
-    public static final int MAGIC_NUMBER_2 = 2;
-
-    /**
-     * Magic number.
-     */
-    public static final int MAGIC_NUMBER_1 = 1;
+	/**
+	 * Magic number.
+	 */
+	public static final int MAGIC_NUMBER_1 = 1;
 
 }

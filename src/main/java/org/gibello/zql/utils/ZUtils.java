@@ -35,7 +35,7 @@ public final class ZUtils {
     /**
      * Functions hash table.
      */
-    private static Hashtable<String, Integer> fcts = new Hashtable<>();
+    private static Hashtable<String, Integer> fcts = new Hashtable<String, Integer>();
 
     /**
      * Default constructor.
@@ -54,7 +54,7 @@ public final class ZUtils {
         int params = noParams;
 
         if (ZUtils.fcts == null) {
-            ZUtils.fcts = new Hashtable<>();
+            ZUtils.fcts = new Hashtable<String, Integer>();
         }
 
         if (params < 0) {

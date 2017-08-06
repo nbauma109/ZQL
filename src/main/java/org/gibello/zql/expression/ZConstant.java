@@ -17,8 +17,8 @@
 
 package org.gibello.zql.expression;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * ZConstant: a representation of SQL constants.
@@ -28,97 +28,97 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class ZConstant implements ZExp {
 
-    /**
-     * ZConstant types.
-     */
-    public static final int UNKNOWN = -1;
-    /**
-     * ZConstant types.
-     */
-    public static final int COLUMNNAME = 0;
-    /**
-     * ZConstant types.
-     */
-    public static final int NULL = 1;
-    /**
-     * ZConstant types.
-     */
-    public static final int NUMBER = 2;
-    /**
-     * ZConstant types.
-     */
-    public static final int STRING = 3;
-    /**
-     * The serial version UID.
-     */
-    private static final long serialVersionUID = 1L;
-    /**
-     * ZConstant types.
-     */
-    private int zconstantType = ZConstant.UNKNOWN;
+	/**
+	 * ZConstant types.
+	 */
+	public static final int UNKNOWN = -1;
+	/**
+	 * ZConstant types.
+	 */
+	public static final int COLUMNNAME = 0;
+	/**
+	 * ZConstant types.
+	 */
+	public static final int NULL = 1;
+	/**
+	 * ZConstant types.
+	 */
+	public static final int NUMBER = 2;
+	/**
+	 * ZConstant types.
+	 */
+	public static final int STRING = 3;
+	/**
+	 * The serial version UID.
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
+	 * ZConstant types.
+	 */
+	private int zconstantType = ZConstant.UNKNOWN;
 
-    /**
-     * Values.
-     */
-    private String values = null;
+	/**
+	 * Values.
+	 */
+	private String values = null;
 
-    /**
-     * Create a new constant, given its name and type.
-     *
-     * @param values         the values.
-     * @param zconstantTypes the types.
-     */
-    public ZConstant(final String values, final int zconstantTypes) {
-        this.values = values;
-        this.zconstantType = zconstantTypes;
-    }
+	/**
+	 * Create a new constant, given its name and type.
+	 *
+	 * @param values
+	 *            the values.
+	 * @param zconstantTypes
+	 *            the types.
+	 */
+	public ZConstant(final String values, final int zconstantTypes) {
+		this.values = values;
+		this.zconstantType = zconstantTypes;
+	}
 
-    /**
-     * @return the constant value
-     */
-    public String getValue() {
-        return this.values;
-    }
+	/**
+	 * @return the constant value
+	 */
+	public String getValue() {
+		return this.values;
+	}
 
-    /**
-     * @return the constant type
-     */
-    public int getType() {
-        return this.zconstantType;
-    }
+	/**
+	 * @return the constant type
+	 */
+	public int getType() {
+		return this.zconstantType;
+	}
 
-    @Override
-    public String toString() {
-        String toString;
+	@Override
+	public String toString() {
+		String toString;
 
-        if (this.zconstantType == ZConstant.STRING) {
-            toString = '\'' + this.values + '\'';
-        } else {
-            toString = this.values;
-        }
+		if (this.zconstantType == ZConstant.STRING) {
+			toString = '\'' + this.values + '\'';
+		} else {
+			toString = this.values;
+		}
 
-        return toString;
-    }
+		return toString;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
 
-        if (o == null || getClass() != o.getClass()) return false;
+		if ((o == null) || (getClass() != o.getClass())) {
+			return false;
+		}
 
-        ZConstant zConstant = (ZConstant) o;
+		ZConstant zConstant = (ZConstant) o;
 
-        return new EqualsBuilder()
-                .append(zconstantType, zConstant.zconstantType)
-                .append(values, zConstant.values)
-                .isEquals();
-    }
+		return new EqualsBuilder().append(zconstantType, zConstant.zconstantType).append(values, zConstant.values).isEquals();
+	}
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(zconstantType)
-                .append(values)
-                .toHashCode();
-    }
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37).append(zconstantType).append(values).toHashCode();
+	}
 }

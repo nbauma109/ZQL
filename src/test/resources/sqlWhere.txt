@@ -1,0 +1,16 @@
+large_table.small_ref_id=small_table.id
+and large_table.mid_ref_id=mid_table.id
+and small_table.group_name='MyGroup'
+and 
+   (large_table.id in (select large_table.id from large_table, mid_table
+where large_table.mid_ref_id=mid_table.id 
+and large_table.date_time1 between '2010-01-01' and '2017-01-01' 
+and mid_table.type='Type1')
+or large_table.id in (select large_table.id from large_table, mid_table, other_table 
+where large_table.mid_ref_id=mid_table.id 
+and large_table.date_time2 between '2010-06-01' and '2017-01-01' 
+and mid_table.type='Type2')
+or large_table.id in (select large_table.id from large_table, mid_table 
+where large_table.mid_ref_id=mid_table.id 
+and mid_table.date_time3 between '2010-08-01' and '2017-01-01' 
+and mid_table.type='Type3'))
