@@ -1,11 +1,9 @@
 package org.gibello.zql;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -27,9 +25,9 @@ public class SubQueryWhereClauseOptimizer implements WhereClauseOptimizer {
 	@Override
 	public void optimizeQuery() {
 		try {
+			where = replaceDateAndTimestampPatterns(where);
 			List<ZFromItem> fromItems = toZFromItems(from);
-			ByteArrayInputStream whereBytes = new ByteArrayInputStream(where.getBytes());
-			ZqlParser whereZqlParser = new ZqlParser(whereBytes);
+			ZqlParser whereZqlParser = new ZqlParser(where);
 			ZExp parsedWhere = whereZqlParser.readExpression();
 			if (parsedWhere instanceof ZExpression) {
 				ZExpression whereExp = (ZExpression) parsedWhere;
@@ -70,13 +68,26 @@ public class SubQueryWhereClauseOptimizer implements WhereClauseOptimizer {
 		}
 	}
 
+	private static String replaceDateAndTimestampPatterns(String where) {
+		return where.replaceAll("\\{(d|ts)([^}]*)\\}","$2");
+	}
+
 	private List<ZFromItem> toZFromItems(String from) {
 		List<ZFromItem> fromItems = new ArrayList<ZFromItem>();
-		List<String> tokens = Arrays.asList(from.split("\\s*,\\s*"));
+		String[] tokens = from.split("\\s*,\\s*");
 		for (String token : tokens) {
-			fromItems.add(new ZFromItem(token));
+			fromItems.add(toZFromItem(token));
 		}
 		return fromItems;
+	}
+
+	private ZFromItem toZFromItem(String fromElement) {
+		String[] tokens = fromElement.split("\\s+");
+		ZFromItem zFromItem = new ZFromItem(tokens[0]);
+		if (tokens.length > 1) {
+			zFromItem.setAlias(tokens[1]);
+		}
+		return zFromItem;
 	}
 
 	public String getFrom() {
